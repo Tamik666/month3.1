@@ -1,10 +1,14 @@
 from aiogram import types, Bot, Dispatcher
 import os
+import buttons
+
+from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup
+
 from  config import  bot
 
 async def start_handler(message: types.Message):
-    await bot.send_message(chat_id=message.from_user.id, text='Hello!')
-    await message.answer(text='Привет')
+    await bot.send_message(chat_id=message.from_user.id, text="Hello!")
+    # await message.answer(text='Привет')
 
 
 async def mem_handler(message: types.Message):
