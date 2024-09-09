@@ -16,9 +16,6 @@ start_test = ReplyKeyboardMarkup(resize_keyboard=True,row_width=2).add(KeyboardB
                                                                        KeyboardButton("/mem_all"),
                                                                        KeyboardButton("/music"),
                                                                        KeyboardButton("/file"))
-game = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='quiz_1', callback_data="quiz1")],
-])
 # #-----------------------------------------------------------------------------------------------------------------------
 # start_test_1.add(KeyboardButton("/start"),
 #                  KeyboardButton("/mem"),
