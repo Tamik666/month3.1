@@ -1,8 +1,10 @@
 import logging
 from aiogram.utils import executor
+from pydantic.v1.schema import default_prefix
+
 from buttons import start, start_test
 from config import bot, dp, admin
-from handlers import commands, echo,quiz
+from handlers import commands, echo, quiz, FSM_registration
 
 
 async def on_startup(_):
@@ -11,8 +13,8 @@ async def on_startup(_):
 
 commands.register_commands(dp)
 quiz.register_quiz(dp)
-
-
+FSM_registration.register_fsm_reg(dp)
+FSM_registration.register_fsm_store(dp)
 
 
 
