@@ -2,7 +2,8 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import ReplyKeyboardRemove
+import buttons  # Предполагается, что buttons содержит submit_button и cancel_button
 
 class FSM_reg(StatesGroup):
     fullname = State()
@@ -13,159 +14,111 @@ class FSM_reg(StatesGroup):
     gender = State()
     country = State()
     photo = State()
+    submit = State()
 
+# Старт FSM
 async def start_fsm_reg(message: types.Message):
-    await message.answer("Enter your fullname")
+    await message.answer("Enter your full name:", reply_markup=buttons.cancel_button)
     await FSM_reg.fullname.set()
 
+# Обработка имени
 async def load_fullname(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['fullname'] = message.text
-    await message.answer('Enter date of birth: ')
+    await message.answer('Enter your date of birth:')
     await FSM_reg.next()
 
+# Обработка даты рождения
 async def load_date(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['date'] = message.text
-    await message.answer('Enter your email ')
+    await message.answer('Enter your email:')
     await FSM_reg.next()
 
+# Обработка email
 async def load_email(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['email'] = message.text
     await message.answer('Enter your phone number:')
     await FSM_reg.next()
 
+# Обработка номера телефона
 async def load_phone(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['phone'] = message.text
     await message.answer('Enter your address:')
     await FSM_reg.next()
 
+# Обработка адреса
 async def load_address(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['address'] = message.text
-    await message.answer('Gender:')
+    await message.answer('Enter your gender:')
     await FSM_reg.next()
 
+# Обработка пола
 async def load_gender(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['gender'] = message.text
     await message.answer('Enter your country:')
     await FSM_reg.next()
 
+# Обработка страны
 async def load_country(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['country'] = message.text
-    await message.answer('Send your photo:')
+    await message.answer('Please send your photo:')
     await FSM_reg.next()
 
-
+# Обработка фото
 async def load_photo(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['photo'] = message.photo[-1].file_id
-    await message.answer('Registration successful!')
-    # Выводим все данные пользователю
+
     await message.answer_photo(photo=data["photo"],
-                 caption=f"Name: {data['fullname']}\n\n"
-                         f"Date of birth: {data['date']}\n"
-                         f"Email: {data['email']}\n"
-                         f"Number: {data['phone']}\n"
-                         f"Address: {data['address']}\n"
-                         f"Gender: {data['gender']}\n"
-                         f"Country: {data['country']}")
+                               caption=f"Name: {data['fullname']}\n"
+                                       f"Date of birth: {data['date']}\n"
+                                       f"Email: {data['email']}\n"
+                                       f"Phone number: {data['phone']}\n"
+                                       f"Address: {data['address']}\n"
+                                       f"Gender: {data['gender']}\n"
+                                       f"Country: {data['country']}",
+                               reply_markup=buttons.submit_button)
+    await FSM_reg.submit.set()
 
-    await state.finish()
+# Обработка подтверждения
+async def submit(message: types.Message, state: FSMContext):
+    kb = ReplyKeyboardRemove()
 
+    if message.text.lower() == "yes":
+        await message.answer("Registration successful!", reply_markup=kb)
+        await state.finish()
 
+    elif message.text.lower() == "no":
+        await message.answer("Registration aborted!", reply_markup=kb)
+        await state.finish()
+
+    else:
+        await message.answer("Invalid input! Please type 'yes' or 'no'.")
+
+# Обработка отмены
+async def cancel(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+
+    if current_state is not None:
+        await state.finish()
+        await message.answer("Registration aborted!", reply_markup=ReplyKeyboardRemove())
+
+# Регистрация хендлеров
 def register_fsm_reg(dp: Dispatcher):
+    dp.register_message_handler(cancel, Text(equals="Cancel", ignore_case=True), state="*")
     dp.register_message_handler(start_fsm_reg, commands=['reg'])
-    dp.register_message_handler(load_fullname,state=FSM_reg.fullname)
-    dp.register_message_handler(load_date,state=FSM_reg.date)
+    dp.register_message_handler(load_fullname, state=FSM_reg.fullname)
+    dp.register_message_handler(load_date, state=FSM_reg.date)
     dp.register_message_handler(load_email, state=FSM_reg.email)
     dp.register_message_handler(load_phone, state=FSM_reg.phone)
     dp.register_message_handler(load_address, state=FSM_reg.address)
     dp.register_message_handler(load_gender, state=FSM_reg.gender)
     dp.register_message_handler(load_country, state=FSM_reg.country)
     dp.register_message_handler(load_photo, content_types=['photo'], state=FSM_reg.photo)
-
-#-----------------------------------------------------------------------------------------------------------------------
-
-class FSM_store(StatesGroup):
-    product_name = State()
-    size = State()
-    category = State()
-    price = State()
-    photo = State()
-
-
-async def start_fsm_store(message: types.Message):
-    await message.answer("Goods name:")
-    await FSM_store.product_name.set()
-
-
-# Обработка названия товара
-async def load_product_name(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['product_name'] = message.text
-    await message.answer('Choose sizes:')
-
-    # Создаем кнопки для выбора размера
-    size_buttons = InlineKeyboardMarkup(row_width=3)
-    sizes = ['S', 'M', 'L', 'XL', 'XXL', '3XL']
-    size_buttons.add(*[InlineKeyboardButton(size, callback_data=size) for size in sizes])
-
-    await FSM_store.next()
-    await message.answer("Choose sizes:", reply_markup=size_buttons)
-
-
-# Обработка выбора размера через callback
-async def load_size(callback_query: types.CallbackQuery, state: FSMContext):
-    async with state.proxy() as data:
-        data['size'] = callback_query.data
-    await callback_query.message.answer('Category:', reply_markup=ReplyKeyboardRemove())
-    await FSM_store.next()
-
-
-# Обработка категории товара
-async def load_category(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['category'] = message.text
-    await message.answer('Price:')
-    await FSM_store.next()
-
-
-# Обработка стоимости товара
-async def load_price(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['price'] = message.text
-    await message.answer('Goods Photo:')
-    await FSM_store.next()
-
-
-# Обработка фото товара
-async def load_photo(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['photo'] = message.photo[-1].file_id
-
-    # Подтверждение регистрации товара
-    await message.answer("Goods successfully added!")
-
-    # Отправка фотографии товара и данных
-    await message.answer_photo(photo=data['photo'],
-                               caption=f"Name: {data['product_name']}\n"
-                                       f"Size: {data['size']}\n"
-                                       f"Category: {data['category']}\n"
-                                       f"Price: {data['price']}")
-
-    await state.finish()
-
-
-# Регистрация всех обработчиков
-def register_fsm_store(dp: Dispatcher):
-    dp.register_message_handler(start_fsm_store, commands=['store'])
-    dp.register_message_handler(load_product_name, state=FSM_store.product_name)
-    dp.register_callback_query_handler(load_size, state=FSM_store.size)
-    dp.register_message_handler(load_category, state=FSM_store.category)
-    dp.register_message_handler(load_price, state=FSM_store.price)
-    dp.register_message_handler(load_photo, content_types=['photo'], state=FSM_store.photo)
+    dp.register_message_handler(submit, state=FSM_reg.submit)
