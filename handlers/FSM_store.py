@@ -15,13 +15,11 @@ class FSM_store(StatesGroup):
     submit = State()
 
 
-# Начало процесса регистрации товара
 async def start_fsm_store(message: types.Message):
     await message.answer("Goods name:", reply_markup=buttons.cancel_button)
     await FSM_store.product_name.set()
 
 
-# Обработка названия товара
 async def load_product_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['product_name'] = message.text
@@ -33,7 +31,6 @@ async def load_product_name(message: types.Message, state: FSMContext):
     await message.answer("Choose sizes:", reply_markup=size_buttons)
 
 
-# Обработка выбора размера через callback
 async def load_size(callback_query: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data['size'] = callback_query.data
@@ -41,7 +38,6 @@ async def load_size(callback_query: types.CallbackQuery, state: FSMContext):
     await FSM_store.next()
 
 
-# Обработка категории товара
 async def load_category(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['category'] = message.text
@@ -49,7 +45,6 @@ async def load_category(message: types.Message, state: FSMContext):
     await FSM_store.next()
 
 
-# Обработка стоимости товара
 async def load_price(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['price'] = message.text
@@ -57,7 +52,6 @@ async def load_price(message: types.Message, state: FSMContext):
     await FSM_store.next()
 
 
-# Обработка фото товара
 async def load_photo(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['photo'] = message.photo[-1].file_id
@@ -74,7 +68,6 @@ async def load_photo(message: types.Message, state: FSMContext):
     await FSM_store.submit.set()
 
 
-# Обработка подтверждения или отмены
 async def submit(message: types.Message, state: FSMContext):
     kb = ReplyKeyboardRemove()
 
@@ -96,7 +89,6 @@ async def submit(message: types.Message, state: FSMContext):
         await message.answer("Invalid input! Please type 'yes' or 'no'.")
 
 
-# Обработка отмены на любом этапе
 async def cancel_fsm(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
 
@@ -107,7 +99,6 @@ async def cancel_fsm(message: types.Message, state: FSMContext):
         await message.answer('Cancelled!', reply_markup=kb)
 
 
-# Регистрация всех обработчиков
 def register_fsm_store(dp: Dispatcher):
     dp.register_message_handler(cancel_fsm, Text(equals='Cancel', ignore_case=True), state="*")
     dp.register_message_handler(start_fsm_store, commands=['store'])

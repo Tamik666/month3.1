@@ -16,61 +16,52 @@ class FSM_reg(StatesGroup):
     photo = State()
     submit = State()
 
-# Старт FSM
 async def start_fsm_reg(message: types.Message):
     await message.answer("Enter your full name:", reply_markup=buttons.cancel_button)
     await FSM_reg.fullname.set()
 
-# Обработка имени
 async def load_fullname(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['fullname'] = message.text
     await message.answer('Enter your date of birth:')
     await FSM_reg.next()
 
-# Обработка даты рождения
 async def load_date(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['date'] = message.text
     await message.answer('Enter your email:')
     await FSM_reg.next()
 
-# Обработка email
 async def load_email(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['email'] = message.text
     await message.answer('Enter your phone number:')
     await FSM_reg.next()
 
-# Обработка номера телефона
 async def load_phone(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['phone'] = message.text
     await message.answer('Enter your address:')
     await FSM_reg.next()
 
-# Обработка адреса
 async def load_address(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['address'] = message.text
     await message.answer('Enter your gender:')
     await FSM_reg.next()
 
-# Обработка пола
 async def load_gender(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['gender'] = message.text
     await message.answer('Enter your country:')
     await FSM_reg.next()
 
-# Обработка страны
 async def load_country(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['country'] = message.text
     await message.answer('Please send your photo:')
     await FSM_reg.next()
 
-# Обработка фото
 async def load_photo(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['photo'] = message.photo[-1].file_id
@@ -86,7 +77,6 @@ async def load_photo(message: types.Message, state: FSMContext):
                                reply_markup=buttons.submit_button)
     await FSM_reg.submit.set()
 
-# Обработка подтверждения
 async def submit(message: types.Message, state: FSMContext):
     kb = ReplyKeyboardRemove()
 
@@ -101,7 +91,6 @@ async def submit(message: types.Message, state: FSMContext):
     else:
         await message.answer("Invalid input! Please type 'yes' or 'no'.")
 
-# Обработка отмены
 async def cancel(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
 
@@ -109,7 +98,7 @@ async def cancel(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("Registration aborted!", reply_markup=ReplyKeyboardRemove())
 
-# Регистрация хендлеров
+
 def register_fsm_reg(dp: Dispatcher):
     dp.register_message_handler(cancel, Text(equals="Cancel", ignore_case=True), state="*")
     dp.register_message_handler(start_fsm_reg, commands=['reg'])
