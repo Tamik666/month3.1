@@ -15,7 +15,10 @@ start_test = ReplyKeyboardMarkup(resize_keyboard=True,row_width=2).add(KeyboardB
                                                                        KeyboardButton("/mem"),
                                                                        KeyboardButton("/mem_all"),
                                                                        KeyboardButton("/music"),
-                                                                       KeyboardButton("/file"))
+                                                                       KeyboardButton("/file"),
+                                                                       KeyboardButton("/reg"),
+                                                                       KeyboardButton("/store"))
+
 cancel_button = ReplyKeyboardMarkup(resize_keyboard=True).add(KeyboardButton('Cancel'))
 
 submit_button = ReplyKeyboardMarkup(resize_keyboard=True,

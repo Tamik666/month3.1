@@ -11,14 +11,13 @@ class FSM_store(StatesGroup):
     size = State()
     category = State()
     price = State()
+    info_product = State()
     photo = State()
     submit = State()
-
 
 async def start_fsm_store(message: types.Message):
     await message.answer("Goods name:", reply_markup=buttons.cancel_button)
     await FSM_store.product_name.set()
-
 
 async def load_product_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -30,13 +29,11 @@ async def load_product_name(message: types.Message, state: FSMContext):
     await FSM_store.next()
     await message.answer("Choose sizes:", reply_markup=size_buttons)
 
-
 async def load_size(callback_query: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data['size'] = callback_query.data
     await callback_query.message.answer('Category:', reply_markup=ReplyKeyboardRemove())
     await FSM_store.next()
-
 
 async def load_category(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -44,13 +41,17 @@ async def load_category(message: types.Message, state: FSMContext):
     await message.answer('Price:')
     await FSM_store.next()
 
-
 async def load_price(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['price'] = message.text
-    await message.answer('Goods Photo:')
+    await message.answer('Info:')
     await FSM_store.next()
 
+async def load_info_product(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['info_product'] = message.text
+    await message.answer("Photo:")
+    await FSM_store.next()
 
 async def load_photo(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -62,11 +63,11 @@ async def load_photo(message: types.Message, state: FSMContext):
                                        f"Name: {data['product_name']}\n"
                                        f"Size: {data['size']}\n"
                                        f"Category: {data['category']}\n"
-                                       f"Price: {data['price']}",
+                                       f"Price: {data['price']}\n"
+                                       f"Info: {data['info_product']}\n",
                                reply_markup=buttons.submit_button)
 
     await FSM_store.submit.set()
-
 
 async def submit(message: types.Message, state: FSMContext):
     kb = ReplyKeyboardRemove()
@@ -74,11 +75,16 @@ async def submit(message: types.Message, state: FSMContext):
     if message.text.lower() == "yes":
         async with state.proxy() as data:
             await message.answer("Registration successful!", reply_markup=kb)
-            await db_main.sql_insert_products(name_product=data['product_name'],
-                                              size=data['size'],
-                                              price=data['price'],
-                                              product_id=data['category'],
-                                              photo=data['photo'],)
+            # Вызов синхронных функций без await
+            db_main.sql_insert_products(name_product=data['product_name'],
+                                        size=data['size'],
+                                        price=data['price'],
+                                        product_id=data['product_name'],
+                                        info_product=data['info_product'],
+                                        photo=data['photo'])
+            db_main.sql_insert_products_info(product_id=data['product_name'],
+                                             category=data['category'],
+                                             info_product=data['info_product'])
             await state.finish()
 
     elif message.text.lower() == "no":
@@ -87,7 +93,6 @@ async def submit(message: types.Message, state: FSMContext):
 
     else:
         await message.answer("Invalid input! Please type 'yes' or 'no'.")
-
 
 async def cancel_fsm(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
@@ -98,7 +103,6 @@ async def cancel_fsm(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer('Cancelled!', reply_markup=kb)
 
-
 def register_fsm_store(dp: Dispatcher):
     dp.register_message_handler(cancel_fsm, Text(equals='Cancel', ignore_case=True), state="*")
     dp.register_message_handler(start_fsm_store, commands=['store'])
@@ -106,5 +110,6 @@ def register_fsm_store(dp: Dispatcher):
     dp.register_callback_query_handler(load_size, state=FSM_store.size)
     dp.register_message_handler(load_category, state=FSM_store.category)
     dp.register_message_handler(load_price, state=FSM_store.price)
+    dp.register_message_handler(load_info_product, state=FSM_store.info_product)
     dp.register_message_handler(load_photo, content_types=['photo'], state=FSM_store.photo)
     dp.register_message_handler(submit, state=FSM_store.submit)
