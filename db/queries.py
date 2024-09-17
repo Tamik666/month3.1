@@ -11,6 +11,7 @@ CREATE_TABLE_PRODUCTS = """
 
 CREATE_TABLE_PRODUCTS_DETAILS = """
     CREATE TABLE IF NOT EXISTS products_details (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_id VARCHAR(255),
         category VARCHAR(255),
         info_product VARCHAR(255)

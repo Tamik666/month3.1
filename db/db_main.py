@@ -12,7 +12,7 @@ def sql_create():
     cursor.execute(queries.CREATE_TABLE_PRODUCTS_DETAILS)
     db.commit()
 
-def sql_insert_products(name_product, size, price, product_id, info_product, photo):
+def sql_insert_products(name_product, size, price, product_id, photo):
     cursor.execute(queries.INSERT_PRODUCTS_QUERY, (name_product, size, price, product_id, photo))
     db.commit()
 

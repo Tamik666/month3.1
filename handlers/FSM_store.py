@@ -11,6 +11,7 @@ class FSM_store(StatesGroup):
     size = State()
     category = State()
     price = State()
+    id = State()
     info_product = State()
     photo = State()
     submit = State()
@@ -44,7 +45,13 @@ async def load_category(message: types.Message, state: FSMContext):
 async def load_price(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['price'] = message.text
-    await message.answer('Info:')
+    await message.answer('ID:')
+    await FSM_store.next()
+
+async def load_product_id(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['id'] = message.text
+    await message.answer('Product info:')
     await FSM_store.next()
 
 async def load_info_product(message: types.Message, state: FSMContext):
@@ -64,6 +71,7 @@ async def load_photo(message: types.Message, state: FSMContext):
                                        f"Size: {data['size']}\n"
                                        f"Category: {data['category']}\n"
                                        f"Price: {data['price']}\n"
+                                       f"ID: {data['id']}\n"
                                        f"Info: {data['info_product']}\n",
                                reply_markup=buttons.submit_button)
 
@@ -79,10 +87,9 @@ async def submit(message: types.Message, state: FSMContext):
             db_main.sql_insert_products(name_product=data['product_name'],
                                         size=data['size'],
                                         price=data['price'],
-                                        product_id=data['product_name'],
-                                        info_product=data['info_product'],
+                                        product_id=data['id'],
                                         photo=data['photo'])
-            db_main.sql_insert_products_info(product_id=data['product_name'],
+            db_main.sql_insert_products_info(product_id=data['id'],
                                              category=data['category'],
                                              info_product=data['info_product'])
             await state.finish()
@@ -110,6 +117,7 @@ def register_fsm_store(dp: Dispatcher):
     dp.register_callback_query_handler(load_size, state=FSM_store.size)
     dp.register_message_handler(load_category, state=FSM_store.category)
     dp.register_message_handler(load_price, state=FSM_store.price)
+    dp.register_message_handler(load_product_id, state=FSM_store.id)
     dp.register_message_handler(load_info_product, state=FSM_store.info_product)
     dp.register_message_handler(load_photo, content_types=['photo'], state=FSM_store.photo)
     dp.register_message_handler(submit, state=FSM_store.submit)

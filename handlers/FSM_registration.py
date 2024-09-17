@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove
-import buttons  # Предполагается, что buttons содержит submit_button и cancel_button
+import buttons
 
 class FSM_reg(StatesGroup):
     fullname = State()
