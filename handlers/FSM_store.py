@@ -4,6 +4,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 import buttons
+import db.db_main
 from db import db_main
 
 class FSM_store(StatesGroup):
@@ -13,6 +14,7 @@ class FSM_store(StatesGroup):
     price = State()
     id = State()
     info_product = State()
+    collection = State()
     photo = State()
     submit = State()
 
@@ -57,6 +59,12 @@ async def load_product_id(message: types.Message, state: FSMContext):
 async def load_info_product(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['info_product'] = message.text
+    await message.answer('Collection name:')
+    await FSM_store.next()
+
+async def load_collection(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['collection'] = message.text
     await message.answer("Photo:")
     await FSM_store.next()
 
@@ -92,6 +100,8 @@ async def submit(message: types.Message, state: FSMContext):
             db_main.sql_insert_products_info(product_id=data['id'],
                                              category=data['category'],
                                              info_product=data['info_product'])
+            db.db_main.sql_insert_collection_products(product_id=data['id'],
+                                                      collection=data['collection'])
             await state.finish()
 
     elif message.text.lower() == "no":
@@ -119,5 +129,6 @@ def register_fsm_store(dp: Dispatcher):
     dp.register_message_handler(load_price, state=FSM_store.price)
     dp.register_message_handler(load_product_id, state=FSM_store.id)
     dp.register_message_handler(load_info_product, state=FSM_store.info_product)
+    dp.register_message_handler(load_collection, state=FSM_store.collection)
     dp.register_message_handler(load_photo, content_types=['photo'], state=FSM_store.photo)
     dp.register_message_handler(submit, state=FSM_store.submit)

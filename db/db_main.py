@@ -10,6 +10,7 @@ def sql_create():
 
     cursor.execute(queries.CREATE_TABLE_PRODUCTS)
     cursor.execute(queries.CREATE_TABLE_PRODUCTS_DETAILS)
+    cursor.execute(queries.CREATE_TABLE_COLLECTION_PRODUCTS)
     db.commit()
 
 def sql_insert_products(name_product, size, price, product_id, photo):
@@ -18,4 +19,8 @@ def sql_insert_products(name_product, size, price, product_id, photo):
 
 def sql_insert_products_info(product_id, category, info_product):
     cursor.execute(queries.INSERT_PRODUCTS_DETAILS_QUERY, (product_id, category, info_product))
+    db.commit()
+
+def sql_insert_collection_products(product_id, collection):
+    cursor.execute(queries.INSERT_COLLECTION_PRODUCTS_QUERY, (product_id, collection))
     db.commit()
