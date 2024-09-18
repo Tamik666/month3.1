@@ -80,7 +80,8 @@ async def load_photo(message: types.Message, state: FSMContext):
                                        f"Category: {data['category']}\n"
                                        f"Price: {data['price']}\n"
                                        f"ID: {data['id']}\n"
-                                       f"Info: {data['info_product']}\n",
+                                       f"Info: {data['info_product']}\n"
+                                       f"Collection: {data['collection']}\n",
                                reply_markup=buttons.submit_button)
 
     await FSM_store.submit.set()
