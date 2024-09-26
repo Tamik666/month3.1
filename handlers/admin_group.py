@@ -2,7 +2,6 @@ import logging
 from aiogram import types, Dispatcher
 from config import bot, admin
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 
 async def welcome_user(message: types.Message):
@@ -46,7 +45,7 @@ async def user_warning(message: types.Message):
                                            text=f"{user_name} was kicked!")
 
 async def pin_message(message: types.Message):
-    logging.info("Pin message handler triggered.")  # Debug log
+    logging.info("Pin message handler triggered.")
     if message.chat.type != 'private':
         if message.reply_to_message:
             pin = message.reply_to_message
