@@ -11,8 +11,9 @@ def get_db_connection():
 def fetch_all_products():
     conn = get_db_connection()
     products = conn.execute("""
-    SELECT * FROM products p 
-    INNER JOIN products_details pd on p.product_id = pd.product_id"""
+    SELECT * FROM products p
+    INNER JOIN products_details pd ON p.product_id = pd.product_id
+    INNER JOIN collection_products cp ON p.product_id = p.product_id"""
     ).fetchall()
     conn.close()
     return products
@@ -23,23 +24,23 @@ async def start_sending_products(message: types.Message):
     show_all_products = InlineKeyboardButton(text="Show All Products", callback_data="show_all_products")
 
     keyboard.add(show_all_products)
-    await message.answer(text="Press to see products", reply_markup=keyboard)
+    await message.answer(text="Press to see goods", reply_markup=keyboard)
 
 async def send_all_products(callback_query: types.CallbackQuery):
     products = fetch_all_products()
     if products:
         for product in products:
-            caption = (f"Names - {product['name_product']}\n"
-                       f"Information - {product['info_product']}\n"
-                       f"Category - {product['category']}\n"
-                       f"Size - {product['size']}\n"
-                       f"Price - {product['price']}\n"
-                       f"Art - {product['product_id']}\n")
+            caption = (f"Name: {product['name_product']}\n"
+                       f"Size: {product['size']}\n"
+                       f"Category: {product['category']}\n"
+                       f"Price: {product['price']}\n"
+                       f"ID: {product['product_id']}\n"
+                       f"Info: {product['info_product']}\n"
+                       f"Collection: {product['collection']}\n")
             await callback_query.message.answer_photo(photo=product["photo"], caption=caption)
     else:
         await callback_query.message.answer("No products found")
 
-
-def register_handlers(dp: Dispatcher):
+def register_send_products(dp: Dispatcher):
     dp.register_message_handler(start_sending_products, commands=["products"])
     dp.register_callback_query_handler(send_all_products, Text(equals="show_all_products"))
