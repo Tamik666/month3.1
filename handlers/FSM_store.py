@@ -4,7 +4,6 @@ from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 import buttons
-import db.db_main
 from db import db_main
 
 class FSM_store(StatesGroup):
@@ -101,7 +100,7 @@ async def submit(message: types.Message, state: FSMContext):
             db_main.sql_insert_products_info(product_id=data['id'],
                                              category=data['category'],
                                              info_product=data['info_product'])
-            db.db_main.sql_insert_collection_products(product_id=data['id'],
+            db_main.sql_insert_collection_products(product_id=data['id'],
                                                       collection=data['collection'])
             await state.finish()
 
